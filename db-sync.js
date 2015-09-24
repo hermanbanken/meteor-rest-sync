@@ -27,17 +27,18 @@ DBSync.configure = function( config ){
 };
 
 DBSync.addCollection = function( config ){
-  this._settings.collections[ config.collection._name ] = _.defaults(config,{
+  var settings = this._settings.collections[ config.collection._name ] = _.defaults(config,{
     "remote_external_id_field": "id",
   });
   
-  this._settings.collections[ config.collection._name ].mapOut = _.defaults(config.mapOut,{
+  if(settings.write !== false)
+  this._settings.collections[ config.collection._name ].mapOut = _.defaults(config.mapOut || {},{
     "_id": {mapTo: "external_id"},
     "deleted_at": {mapTo: "deleted_at"},
     "externalId": {mapTo: "id"},
   });
   
-  this._settings.collections[ config.collection._name ].mapIn = _.defaults(config.mapIn,{
+  this._settings.collections[ config.collection._name ].mapIn = _.defaults(config.mapIn || {},{
     "external_id": {mapTo: "_id"},
     "id": {mapTo: "externalId", mapFunc: function(val){
       return val.toString();
@@ -177,7 +178,7 @@ DBSync._handleFetch = function(err, resp, key ){
         }
       }catch(e){
         error_count++;
-        console.error( "Error during fetch convert for key: " + key + " - " + e );
+        console.error( "Error during fetch convert for key: " + key + " - " + e, e.stack );
       }
     });
 
