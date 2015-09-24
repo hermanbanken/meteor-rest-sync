@@ -101,10 +101,12 @@ DBSync._handleUpdate = function( key, doc, callback ){
 DBSync._handleSync = function( key ){
   var self = this;
   var settings = self.collectionSettings(key);
+  
+  if (settings.write !== false)
   settings.collection.after.insert(function (userId, doc) {
     self._handleInsert( key, doc, function(err, resp){
       if( err ){
-        console.error( "Rails Insert Failed: " + err );
+        console.error( "Insert Failed: " + err );
         self._errors.insert({'id': doc._id, type: "insert", collection: key, retries: 0});
       }else{
         // Don't propogate (trigger hooks) this change
@@ -113,10 +115,11 @@ DBSync._handleSync = function( key ){
     });
   });
   
+  if (settings.write !== false)
   settings.collection.after.update(function (userId, doc, fieldNames, modifier, options) {
     self._handleUpdate( key, doc, function(err, resp){
       if( err ){
-        console.error( "Rails Update Failed", err );
+        console.error( "Update Failed", err );
         self._errors.insert({'id': doc._id, type: "update", collection: key, retries: 0});
       }
     });
